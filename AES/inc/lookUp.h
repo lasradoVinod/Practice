@@ -6,7 +6,7 @@ typedef enum __KeySize
 {
 	enKeySize_128 = 0,
 	enKeySize_192,
-	enKeySize_256,
+	enKeySize_256
 }KeySize;
 
 extern uint8_t sBox [16][16];

@@ -14,7 +14,7 @@ int rotateRow(uint8_t * const a, uint8_t rNum, RotDir dir)
 	{
 		if(rNum != 0)
 		{
-			rNum = 4 - rNum;
+			rNum = (uint8_t)((uint8_t)4 - rNum);
 		}
 	}
 	for(iter = 0;iter < 4 ;iter ++)
@@ -76,7 +76,7 @@ void performMul(uint8_t state[4][4])
 				tempVal = tempVal < 0xFF? tempVal:(tempVal - 0xFF);
 				tempVal = E((uint8_t) tempVal);
 
-				temp ^= tempVal;
+				temp ^= (uint8_t)tempVal;
 			
 			}
 			outputState[iter][count] = temp;
@@ -112,6 +112,7 @@ void keyGeneration(void* a, uint8_t inpKey[16], KeySize keySize)
 	uint8_t (*roundKey)[4][(4*(keyMap[keySize] + 1))] = (uint8_t (*) [4][(4*(keyMap[keySize] + 1))])a;
 	uint8_t ind,iInd,count = 0;
 	uint8_t col[4] = {0};
+
 	for(ind=0;ind<4;ind++)
 	{
 		for(iInd=0;iInd<4;iInd++)
@@ -122,10 +123,12 @@ void keyGeneration(void* a, uint8_t inpKey[16], KeySize keySize)
 	
 	for(ind=4;ind<(4*(keyMap[keySize] + 1));ind++)
 	{
+		printf("\nColumn: ");
 		for(iInd=0;iInd<4;iInd++)
 		{
 			col[iInd] = (*roundKey)[iInd][ind-1];
 		}
+		
 		
 		if((ind %4) == 0)
 		{
@@ -137,35 +140,47 @@ void keyGeneration(void* a, uint8_t inpKey[16], KeySize keySize)
 			}
 		}
 		
-		printf("\nFinal column: ");
+		
 		
 		for(iInd=0;iInd<4;iInd++)
 		{
 			col[iInd] ^= (*roundKey)[iInd][ind-4];
-			(*roundKey)[iInd][ind] = col[iInd];
+			
 		}
+		for(iInd=0;iInd<4;iInd++)
+		{
+			(*roundKey)[iInd][ind] = col[iInd];	
+		}
+		dislay(col);
 	}
 }
 
+void addRoundKey(uint8_t state[4][4], void* a, KeySize keySize, uint8_t round)
+{
+
+}
+int encryptAES(uint8_t input[], uint8_t key[], KeySize keySize, uint8_t output[] )
+{
+	uint8_t iter,innerIter, count = 0;
+	uint8_t state[4][4] = {{0}};
+	uint8_t roundKey[4][(4*(keyMap[keySize] + 1))] ;
+
+	convert(state,input);
+	keyGeneration(roundKey,key,keySize);
+
+	addRoundKey(state,roundKey,keySize,0);
+
+	return 0;
+}
 
 int main()
 {
 	uint8_t key[16] = {0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c};
-	uint8_t state[4][4] = {{0}};
 	uint8_t input[] = {0xD4,0xBF,0x5D,0x30,5,6,7,8,9,10,11,12,13,14,15,16};
-	uint8_t iter,innerIter, count = 0;
-	uint8_t roundKey[4][44] = {{0}};
-	
-    keyGeneration(roundKey,key,enKeySize_128);
-	
-	for(iter=0;iter<4;iter++)
-	{
-		for(innerIter=0;innerIter<44;innerIter++)
-		{
-			printf("%d",roundKey[innerIter][iter]);
-		}
-	}
-	
+	uint8_t output[16] ={0};
+
+	encryptAES(input,key,enKeySize_128,output);
+		
 	return 0;
 }
 
