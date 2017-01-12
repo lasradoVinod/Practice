@@ -13,7 +13,7 @@ extern uint8_t sBox [16][16];
 
 extern uint8_t invsBox [16][16];
 
-extern uint32_t rCon[15];
+extern uint8_t rCon[4][15];
 
 extern uint8_t LTable [16][16];
 
@@ -22,5 +22,7 @@ extern uint8_t ETable [16][16];
 extern uint8_t MulMatrix[4][4];
 
 extern uint8_t keyMap[3];
+
+extern uint8_t keyActSize[3];
 
 #endif
