@@ -14,3 +14,9 @@ Currently contains BST implementation
 
 AES:
 Under development. Implementation of the AES encryption algorithm.
+
+TR1: 
+Codechef problem TR1. Not yet completed
+
+CHEFDETE:
+Codechef problem CHEFDETE. Successful submission. Beginner level.(Used to boost morale).
