@@ -16,7 +16,7 @@ AES:
 Under development. Implementation of the AES encryption algorithm.
 
 TR1: 
-Codechef problem TR1. Not yet completed
+Codechef problem TR1. Unfortunately could not beat time restriction.
 
 CHEFDETE:
 Codechef problem CHEFDETE. Successful submission. Beginner level.(Used to boost morale).
