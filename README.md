@@ -26,4 +26,3 @@ Hacker rank problem with the same name has met the same fate as TR1 and ANKPAL. 
 
 AnD: Another Hacker Rank problem named Append and Delete.
 
-P2P: Implementing a centralised P2P file sharing server client system.
