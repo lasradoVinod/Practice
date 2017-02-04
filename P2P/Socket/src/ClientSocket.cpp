@@ -1,19 +1,19 @@
 // Implementation of the ClientSocket class
 
 #include "ClientSocket.h"
-#include "SocketException.h"
+#include "Exception.h"
 
 
 ClientSocket::ClientSocket ( std::string host, int port )
 {
   if ( ! Socket::create() )
     {
-      throw SocketException ( "Could not create client socket." );
+      throw Exception ( "Could not create client socket.",-1 );
     }
 
   if ( ! Socket::connect ( host, port ) )
     {
-      throw SocketException ( "Could not bind to port." );
+      throw Exception ( "Could not bind to port.",-1 );
     }
 
 }
@@ -23,7 +23,7 @@ const ClientSocket& ClientSocket::operator << ( const std::string& s ) const
 {
   if ( ! Socket::send ( s ) )
     {
-      throw SocketException ( "Could not write to socket." );
+      throw Exception ( "Could not write to socket.",-1 );
     }
 
   return *this;
@@ -35,7 +35,7 @@ const ClientSocket& ClientSocket::operator >> ( std::string& s ) const
 {
   if ( ! Socket::recv ( s ) )
     {
-      throw SocketException ( "Could not read from socket." );
+      throw Exception ( "Could not read from socket.",-1 );
     }
 
   return *this;

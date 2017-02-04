@@ -1,16 +1,22 @@
 #include "ServerSocket.h"
-#include "SocketException.h"
+#include "Exception.h"
 #include <string>
 #include <iostream>
+#include "Log.h"
 
-int main ( int argc, char *argv[] )
+int main ( void )
 {
   std::cout << "running....\n";
 
+  Logger* p = Logger:: getInstance(0);
+
+  std::string str;
   try
     {
       // Create the socket
       ServerSocket server ( 30000 );
+
+      p->Log("Server Created",10);
 
       while ( true )
 	{
@@ -27,11 +33,11 @@ int main ( int argc, char *argv[] )
 		  new_sock << data;
 		}
 	    }
-	  catch ( SocketException& ) {}
+	  catch ( Exception& ) {}
 
 	}
     }
-  catch ( SocketException& e )
+  catch ( Exception& e )
     {
       std::cout << "Exception was caught:" << e.description() << "\nExiting.\n";
     }

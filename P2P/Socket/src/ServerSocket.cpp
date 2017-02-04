@@ -1,24 +1,24 @@
 // Implementation of the ServerSocket class
 
 #include "ServerSocket.h"
-#include "SocketException.h"
+#include "Exception.h"
 
 
 ServerSocket::ServerSocket ( int port )
 {
   if ( ! Socket::create() )
     {
-      throw SocketException ( "Could not create server socket." );
+      throw Exception ( "Could not create server socket.",-1 );
     }
 
   if ( ! Socket::bind ( port ) )
     {
-      throw SocketException ( "Could not bind to port." );
+      throw Exception ( "Could not bind to port.",1 );
     }
 
   if ( ! Socket::listen() )
     {
-      throw SocketException ( "Could not listen to socket." );
+      throw Exception ( "Could not listen to socket.",-1 );
     }
 
 }
@@ -32,7 +32,7 @@ const ServerSocket& ServerSocket::operator << ( const std::string& s ) const
 {
   if ( ! Socket::send ( s ) )
     {
-      throw SocketException ( "Could not write to socket." );
+      throw Exception ( "Could not write to socket.", -1);
     }
 
   return *this;
@@ -44,7 +44,7 @@ const ServerSocket& ServerSocket::operator >> ( std::string& s ) const
 {
   if ( ! Socket::recv ( s ) )
     {
-      throw SocketException ( "Could not read from socket." );
+      throw Exception ( "Could not read from socket.",-1 );
     }
 
   return *this;
@@ -54,7 +54,7 @@ void ServerSocket::accept ( ServerSocket& sock )
 {
   if ( ! Socket::accept ( sock ) )
     {
-      throw SocketException ( "Could not accept socket." );
+      throw Exception ( "Could not accept socket.",-1 );
     }
 }
 

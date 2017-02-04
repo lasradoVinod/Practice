@@ -1,9 +1,9 @@
 #include "ClientSocket.h"
-#include "SocketException.h"
+#include "Exception.h"
 #include <iostream>
 #include <string>
 
-int main ( int argc, char* argv[] )
+int main (void)
 {
   try
     {
@@ -17,12 +17,12 @@ int main ( int argc, char* argv[] )
 	  client_socket << "Test message.";
 	  client_socket >> reply;
 	}
-      catch ( SocketException& ) {}
+      catch ( Exception& ) {}
 
       std::cout << "We received this response from the server:\n\"" << reply << "\"\n";;
 
     }
-  catch ( SocketException& e )
+  catch ( Exception& e )
     {
       std::cout << "Exception was caught:" << e.description() << "\n";
     }

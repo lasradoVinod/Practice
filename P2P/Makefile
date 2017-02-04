@@ -3,16 +3,20 @@ simple_client_objects = simple_client_main.o
 
 PROJECT_ROOT= $(shell pwd)
 
-CXXFLAGS = -Wall -Wextra 
+CXXFLAGS = -Wall -Wextra -g
 
 SRC = 
 INCDIR =
-VPATH =
+VPATH = .
 
 OBJDIR = $(PROJECT_ROOT)/Build
 
 #############   ADDING FILES RELATING TO SOCKET  #######################
 -include $(PROJECT_ROOT)/Socket/mak/socket.mak
+########################################################################
+
+#############   ADDING GENERIC FILES ###################################
+-include $(PROJECT_ROOT)/Generic/mak/generic.mak
 ########################################################################
 
 OBJS = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRC))
