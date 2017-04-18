@@ -5,11 +5,13 @@
 #include "graph.hpp"
 #include "GraphArr.hpp"
 
+#define MAX 999
 
 GraphArr::GraphArr(uint16_t count)
 {
-	uint16_t i;
-	root = (int **)malloc(sizeof(int*));
+	uint16_t i,j;
+	numNodes = count;
+	root = (int **)malloc(count * sizeof(int*));
 	if(root == NULL)
 		exit(1);
 	for(i = 0; i < count ; i ++)
@@ -17,7 +19,10 @@ GraphArr::GraphArr(uint16_t count)
 		root[i] = (int*)malloc(count * sizeof(int));
 		if(root[i] == NULL)
 			exit(1);
-		memset (root[i],0x0FFFFFFF,count * sizeof(int));
+		for (j=0;j<count;j++)
+		{
+			root[i][j] = MAX;
+		}
 	}
 }
 
@@ -38,7 +43,7 @@ void GraphArr::addEdge(uint32_t i, uint32_t j, int w)
 
 void GraphArr::deleteEdge(uint32_t i, uint32_t j)
 {
-	root[i][j] = 0x0FFFFFFF;
+	root[i][j] = MAX;
 }
 
 void GraphArr::BFStraversal(uint32_t base)
@@ -52,7 +57,7 @@ void GraphArr::DFStraversal(uint32_t base)
 	std::cout << base << std::endl;
 	for(i = 0; i < numNodes; i++)
 	{
-		if(root[base][i] != 0x0FFFFFFF && visited[i] == 0)
+		if(root[base][i] != MAX && visited[i] == 0)
 		{
 			visited[i] = 1;
 			DFStraversal(i);
@@ -60,22 +65,23 @@ void GraphArr::DFStraversal(uint32_t base)
 	}
 */}
 
-void GraphArr::FloydMarshall(int ** dist, int ** par)
+void GraphArr::FloydWarshall(int * dist, int * par)
 {
 	uint16_t i,j,k;
-
-	memcpy(dist,root,numNodes * numNodes * 4);
 
 	for(i=0;i<numNodes;i++)
 	{
 		for(j=0;j<numNodes;j++)
 		{
-			if(dist[i][j] != 0x0FFFFFFF)
+			dist[j * numNodes + i] = root[i][j];
+
+			if(dist[j * numNodes + i] != MAX)
 			{
-				par[i][j] = i;
+				par[j * numNodes + i] = i;
 			}
 		}
 	}
+
 
 	for(k=0;k<numNodes;k++)
 	{
@@ -83,12 +89,33 @@ void GraphArr::FloydMarshall(int ** dist, int ** par)
 		{
 			for(j=0;j<numNodes;j++)
 			{
-				if(dist[i][j] > dist[i][k] + dist[k][j])
+				if(dist[j * numNodes + i] > dist[k * numNodes + i] + dist[j * numNodes + k])
 				{
-					dist[i][j] = dist[i][k] + dist[k][j];
-					par[i][j] = k;
+					dist[j * numNodes + i] = dist[k * numNodes + i] + dist[j * numNodes + k];
+					par[j * numNodes + i] = k;
 				}
 			}
 		}
+	}
+}
+
+void GraphArr::display()
+{
+	uint16_t i,j;
+	
+	for(i = 0; i < numNodes; i++)
+	{
+		for(j = 0; j < numNodes; j++)
+		{
+			if (root[i][j] == MAX)
+			{
+				std::cout << "inf ";
+			}
+			else
+			{
+				std::cout << root[i][j] << " ";
+			}
+		}
+		std::cout << std::endl;
 	}
 }

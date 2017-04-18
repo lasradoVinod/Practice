@@ -20,7 +20,8 @@ class GraphArr: public Graph <uint32_t, int>
         void deleteEdge(uint32_t, uint32_t);
 		void BFStraversal(uint32_t);
 		void DFStraversal(uint32_t);
-		void FloydMarshall(int ** dist, int ** par);
+		void display();
+		void FloydWarshall(int * dist, int * par);
 };      
                       
 #endif
