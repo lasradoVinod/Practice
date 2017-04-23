@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdint.h>
 #include <cstring>
+#include <list>
+#include <iterator>
 #include <stdlib.h>
 #include "graph.hpp"
 #include "GraphArr.hpp"
@@ -48,22 +50,66 @@ void GraphArr::deleteEdge(uint32_t i, uint32_t j)
 
 void GraphArr::BFStraversal(uint32_t base)
 {
+	uint16_t i,curr;
+	uint8_t * visited = (uint8_t *)malloc(numNodes * sizeof(uint8_t));
 
+	for (i=0;i<numNodes;i++)
+	{
+		visited[i] = (uint8_t)0;
+	}
+	std::list<uint32_t> nodes ;
+	nodes.push_front(base);
+	
+	std::cout << base << std::endl;
+	visited[base] = (uint8_t)1;
+	while(!nodes.empty())
+	{
+		curr = *(nodes.begin());
+		nodes.pop_front();
+
+		for(i =0; i<numNodes ; i++)
+		{
+			if(root[curr][i] != MAX && visited[i] != 1)
+			{
+				visited[i] = (uint8_t)1;
+				std::cout << i << std::endl;
+				nodes.push_back(i);
+			}	
+		}
+	}
 }
 
 void GraphArr::DFStraversal(uint32_t base)
 {
-/*	uint16_t i;
-	std::cout << base << std::endl;
-	for(i = 0; i < numNodes; i++)
+	uint16_t i,curr;
+	uint8_t * visited = (uint8_t *)malloc(numNodes * sizeof(uint8_t));
+	std::list<uint32_t> nodes ;
+	nodes.push_front(base);
+
+	for (i=0;i<numNodes;i++)
 	{
-		if(root[base][i] != MAX && visited[i] == 0)
+		visited[i] = 0;
+	}
+
+	while(!nodes.empty())
+	{
+		curr = *(nodes.begin());
+		nodes.pop_front();
+
+		if (visited[curr] == 1)
 		{
-			visited[i] = 1;
-			DFStraversal(i);
+			continue;
+		}
+
+		visited[curr] = 1;
+		std::cout << curr << std::endl;
+		for(i =0; i<numNodes ; i++)
+		{
+			if(root[curr][i] != MAX && visited[i] != 1)
+				nodes.push_front(i);				
 		}
 	}
-*/}
+}
 
 void GraphArr::FloydWarshall(int * dist, int * par)
 {
@@ -118,4 +164,9 @@ void GraphArr::display()
 		}
 		std::cout << std::endl;
 	}
+}
+
+void Kruskal(int * tree)
+{
+	
 }

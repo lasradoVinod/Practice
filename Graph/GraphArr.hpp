@@ -22,6 +22,7 @@ class GraphArr: public Graph <uint32_t, int>
 		void DFStraversal(uint32_t);
 		void display();
 		void FloydWarshall(int * dist, int * par);
-};      
+	    void Kruskal(int * tree);
+}; 
                       
 #endif

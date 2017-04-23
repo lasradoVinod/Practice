@@ -39,9 +39,11 @@ int main()
 	graphTest.addEdge(4,0,1);
 	graphTest.addEdge(4,1,3);
 	graphTest.display();
-	graphTest.FloydWarshall((int*)weight,(int*)parent);
+	/*graphTest.FloydWarshall((int*)weight,(int*)parent);
 	display((int *)weight,5);
 	cout <<  "\n";
-	display((int *)parent,5);
+	display((int *)parent,5);*/
+    graphTest.BFStraversal(0);
+
 	return 0;
 }
