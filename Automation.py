@@ -7,10 +7,12 @@ from subprocess import Popen, PIPE
 apps = []
 generatedApps = []
 compiledApps = []
+recvApps = []
 
 lock = threading.Lock()
 listGenLock = threading.Lock()
 listCompLock = threading.Lock()
+listAppLock = threading.Lock()
 
 def display(val):
 	global lock
@@ -19,7 +21,6 @@ def display(val):
 	lock.release()
 	
 def deleteFile(fname):
-	print os.path.isfile(fname)
 	if (os.path.isfile(fname)) == True:
 		delFiles.write(fname + "\n")
 		os.remove(fname)
@@ -38,11 +39,11 @@ def deleteAllFiles(dirname):
    			os.remove(os.path.join(root, file))
 
 class myGenerateThread (threading.Thread):
-    def __init__(self,func):
-        threading.Thread.__init__(self)
-        self.func = func
-    def run(self):
- 		self.func()
+	def __init__(self,func):
+		threading.Thread.__init__(self)
+		self.func = func
+	def run(self):
+		self.func()
 
 def generateMacFile(currentApp):
 	templateMacFile = '''execUserExecutionStopped() 
@@ -85,39 +86,45 @@ def PortSpecificDebug(currentApp):
 	p.communicate()
 
 def Generate():
-	for ent in apps:
-		# Deleting Compilation log file
-		deleteFile (logComp + directoryStr + ent[0] + ".txt")
-		#Deleting Result File
-		deleteFile (testRes + directoryStr + ent[0] + ".txt")
-		#Deleting all files from src folder
-		deleteAllFiles (osConf + directoryStr + ent[0] + directoryStr + "src")
-		#Deleting all files from inc folder
-		deleteAllFiles (osConf + directoryStr + ent[0] + directoryStr + "inc")
-		#Deleting all files from obj folder
-		deleteAllFiles (rootDir + directoryStr + ent[0] + directoryStr + "obj")
+	global genDone
+	while (appDone == False):
+		recvApps = getApp()
+		if (len(recvApps) > 0):
+			ent = recvApps.split("#")
+			del ent[-1]
+			# Deleting Compilation log file
+			deleteFile (logComp + directoryStr + ent[0] + ".txt")
+			#Deleting Result File
+			deleteFile (testRes + directoryStr + ent[0] + ".txt")
+			#Deleting all files from src folder
+			deleteAllFiles (osConf + directoryStr + ent[0] + directoryStr + "src")
+			#Deleting all files from inc folder
+			deleteAllFiles (osConf + directoryStr + ent[0] + directoryStr + "inc")
+			#Deleting all files from obj folder
+			deleteAllFiles (rootDir + directoryStr + ent[0] + directoryStr + "obj")
 
-		display( "generating for " + ent[0])
+			display( "generating for " + ent[0])
 
-		fname = rootDir + directoryStr + ent[0] + ".mak"
+			fname = rootDir + directoryStr + ent[0] + ".mak"
 
-		if os.path.isfile(fname):
-			cmdStr = "make OS_PROCESSOR_VARIANT=REV1 -f " + ent[0] + ".mak" + "generate_os_config >" + logComp + \
-						directoryStr + ent[0] + ".txt 2>&1"
-			cmd = [cmdStr]
-			p = Popen(cmd, shell = True)
-			p.communicate() #waiting for execution to complete
-			listGenLock.acquire()
-			generatedApps.append(ent)
-			listGenLock.release()
-		else:
-			errorStr = "Makefile for " + ent[0] + " does not exist "
-			display(errorStr)
-			fileLog = open ((logComp + directoryStr + ent[0] + ".txt") , 'w' )
-			fileLog.write(errorStr)
+			if os.path.isfile(fname):
+				cmdStr = "make OS_PROCESSOR_VARIANT=REV1 -f " + ent[0] + ".mak" + "generate_os_config >" + logComp + \
+							directoryStr + ent[0] + ".txt 2>&1"
+				cmd = [cmdStr]
+				p = Popen(cmd, shell = True)
+				p.communicate() #waiting for execution to complete
+				listGenLock.acquire()
+				generatedApps.append(ent)
+				listGenLock.release()
+			else:
+				errorStr = "Makefile for " + ent[0] + " does not exist "
+				display(errorStr)
+				fileLog = open ((logComp + directoryStr + ent[0] + ".txt") , 'w' )
+				fileLog.write(errorStr)
 	genDone = True
 
 def Compile():
+	global compDone
 	while (True):
 		if (len(generatedApps) > 0):
 			listGenLock.acquire()
@@ -127,13 +134,13 @@ def Compile():
 
 			display( "compiling " + currentApp[0])
 			cmdStr = "make OS_PROCESSOR_VARIANT=REV1 -f " + currentApp[0] + ".mak" + "-B " + currentApp[0] +".elf >>" + logComp + \
-						directoryStr + ent[0] + ".txt 2>&1"
+						directoryStr + currentApp[0] + ".txt 2>&1"
 			cmd = [cmdStr]
 			p = Popen(cmd,shell=True)
 			p.communicate() #waiting for execution to complete
 
-			eflPath = rootDir + directoryStr + currentApp[0] + directoryStr + "obj" + directoryStr + currentApp[0] + ".elf"
-			if os.path.isfile(eflPath):
+			elfPath = rootDir + directoryStr + currentApp[0] + directoryStr + "obj" + directoryStr + currentApp[0] + ".elf"
+			if os.path.isfile(elfPath):
 				listCompLock.acquire()
 				compiledApps.append(currentApp)
 				listCompLock.release()
@@ -142,21 +149,30 @@ def Compile():
 			break
 
 def Debug():
+	global compDone
 	while (True):
 		if (len(compiledApps) > 0):
-			
 			listCompLock.acquire()
 			currentApp = compiledApps[0]
 			del compiledApps[0]
 			listCompLock.release()
-
 			display( "debugging " + currentApp[0])
 			PortSpecificDebug(currentApp)
-		
 		if compDone == True and len(compiledApps) == 0 :
 			debDone = True
 			break
 
+def getApp():
+	global appDone
+	if (len(apps) > 0):
+		listAppLock.acquire()
+		currentApp = apps[0]
+		del apps[0]
+		listAppLock.release()
+		return currentApp
+	else:
+		appDone = True
+		return ''
 
 osName = platform.system()
 directoryStr = '/'
@@ -179,37 +195,36 @@ with open(testApp, 'r') as f:
     for line in f:
         if (line[0] == ";"):
         	continue
-        current = line.split("#")
-        del current[-1]
-        apps.append(current)
+        apps.append(line)
 
 print apps
 
 genDone = False
 compDone = False
 debDone = False
+appDone = False
 
 genThread = myGenerateThread(Generate)
 compThread = myGenerateThread(Compile)
-#debThread = myGenerateThread(Debug)
+debThread = myGenerateThread(Debug)
 
 genThread.start()
 compThread.start()
-#debThread.start()
+debThread.start()
 
 genThread.join()
 compThread.join()
-#debThread.join()
+debThread.join()
 
-while(debDone == False):
-	continue
+#while(debDone == False):
+#	continue
 
-cmdStr = "java -jar Build_Checker.jar -module Os -cpu S32K144 -compiler IAR -testlogs Test_Results \
--buildlogs Log_Compile -strconfigid ASR421_S32K144_ESTR -debug CSPY -cpucore 1 -arversion R4.2.1"
+#cmdStr = "java -jar Build_Checker.jar -module Os -cpu S32K144 -compiler IAR -testlogs Test_Results \
+#-buildlogs Log_Compile -strconfigid ASR421_S32K144_ESTR -debug CSPY -cpucore 1 -arversion R4.2.1"
 
-cmd = [cmdStr]
-p = Popen(cmd,shell=True)
-p.communicate() #waiting for execution to complete
+#cmd = [cmdStr]
+#p = Popen(cmd,shell=True)
+#p.communicate() #waiting for execution to complete
 
-print ("Completed All Files.")
-print ("ESTR Generated")
+#print ("Completed All Files.")
+#print ("ESTR Generated")
