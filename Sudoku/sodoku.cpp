@@ -17,28 +17,45 @@ void display(vector <vector <int> > sudoku)
 	{
 		for (iIt = oIt->begin(); iIt != oIt->end(); ++iIt)
 		{
-			cout << *iIt << " "; 
+			cout << *iIt << " ";
 		}
 		cout << endl;
 	}
 }
 
-void removeFromRow(int row,int val, int size, vector <vector <vector <int> > > possibilities)
+void displayP(vector <vector <vector <int> > > possibilities,int size)
 {
-	int i,j;
+	int i,j,k;
+
+	for(i=0;i<size;i++)
+	{
+		for(j=0;j<size;j++)
+		{
+			cout << i << " " << j << " ";
+			for (k=0;k<size;k++)
+			{
+				    cout << possibilities[i][j][k] << " " ;
+			}
+			cout << endl;
+		}
+	}
+}
+void removeFromRow(int row,int val, int size, vector <vector <vector <int> > >& possibilities)
+{
+	int i;
 	for(i=0;i<size;i++)
 	{
 		possibilities[row][i][val] = 0;
-	}	
+	}
 }
 
 void removeFromCol(int col,int val, int size, vector <vector <vector <int> > >& possibilities)
 {
-	int i,j;
+	int i;
 	for(i=0;i<size;i++)
 	{
 		possibilities[i][col][val] = 0;
-	}	
+	}
 }
 
 void removeFromGrid(int row,int col,int dim,int val, vector <vector <vector <int> > >& possibilities)
@@ -48,7 +65,7 @@ void removeFromGrid(int row,int col,int dim,int val, vector <vector <vector <int
 	int colStart = (col /dim) * dim;
 	for(i=rowStart;i<rowStart + dim;i++)
 	{
-		for (j=colStart;i<colStart + dim;j++)
+		for (j=colStart;j<(colStart + dim);j++)
 		{
 			possibilities[i][j][val] = 0;
 		}
@@ -57,11 +74,11 @@ void removeFromGrid(int row,int col,int dim,int val, vector <vector <vector <int
 
 int isSingle(vector <int> vec)
 {
-	int pos,finPos = 0;
+	unsigned int pos,finPos = 0;
 	uint8_t count = 0;
 	for (pos = 0; pos < vec.size(); pos++)
 	{
-		if(vec[pos] = 1)
+		if(vec[pos] == 1)
 		{
 			if (count == 0)
 			{
@@ -79,15 +96,18 @@ int isSingle(vector <int> vec)
 int solve(vector <vector <int> >& sudoku,int dim)
 {
 	vector <vector <vector <int> > > possibilities;
-	vector <int> setOfAll;
+	vector <int> setOfAll,setOfNone;
 	int size = dim * dim;
-	int i,j,k,blocksLeft,prevBlocksLeft;
+	int i,j,blocksLeft,prevBlocksLeft;
 	int val;
 	possibilities.resize(size);
+	setOfAll.resize(size);
+	setOfNone.resize(size);
 	for(i=0;i<size;i++)
 	{
 		possibilities[i].resize(size);
 		setOfAll[i] = 1;
+		setOfNone[i] = 0;
 	}
 
 	for(i=0;i<size;i++)
@@ -104,6 +124,7 @@ int solve(vector <vector <int> >& sudoku,int dim)
 		{
 			if (sudoku[i][j] != -1)
 			{
+				possibilities[i][j] = setOfNone;
 				removeFromRow(i,sudoku [i][j] - 1,size,possibilities);
 				removeFromCol(j,sudoku[i][j] - 1,size,possibilities);
 				removeFromGrid(i,j,dim,sudoku[i][j] -1,possibilities);
@@ -125,7 +146,7 @@ int solve(vector <vector <int> >& sudoku,int dim)
 				val = isSingle(possibilities[i][j]);
 				if (val > 0)
 				{
-					sudoku [i][j] = val; // TODO
+					sudoku [i][j] = val;
 					removeFromRow(i,val - 1,size,possibilities);
 					removeFromCol(j,val - 1,size,possibilities);
 					removeFromGrid(i,j,dim,val -1,possibilities);
@@ -176,10 +197,8 @@ int main()
 		sudoku [j][k] = temp;
 	}
 
-	cout << "The unsolved sudoku" << endl << endl ;
-
-	display(sudoku);
 	solve (sudoku,dim);
 
-	display(sudoku);	
+	display(sudoku);
 }
+
