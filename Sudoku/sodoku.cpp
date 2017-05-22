@@ -17,7 +17,15 @@ void display(vector <vector <int> > sudoku)
 	{
 		for (iIt = oIt->begin(); iIt != oIt->end(); ++iIt)
 		{
-			cout << *iIt << " ";
+			if (*iIt == -1 )
+				cout << " " << " | ";
+ 			else
+				cout << *iIt << " | ";
+		}
+		cout << endl;
+		for (iIt = oIt->begin(); iIt != oIt->end(); ++iIt)
+		{
+			cout << "___ ";
 		}
 		cout << endl;
 	}
@@ -197,8 +205,12 @@ int main()
 		sudoku [j][k] = temp;
 	}
 
+	cout << endl << "Input problem" << endl ;
+	display(sudoku);
+
 	solve (sudoku,dim);
 
+	cout << endl << "Solution" << endl ;
 	display(sudoku);
 }
 
