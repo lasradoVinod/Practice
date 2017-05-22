@@ -7,21 +7,25 @@
 using namespace std;
 
 #define BASE				256
-#define PRIME_NUMBER		101//2347
+#define PRIME_NUMBER		2347
 
 int hashCreate(const string i, unsigned int size)
 {
 	int it,retVal = 0;
 
-	for (it = 0; it < size; ++it)
+	for (it = 0; it < (int)size; ++it)
 	{
 		retVal = ((retVal * BASE) + i[it]) % PRIME_NUMBER;
 	}
 	return retVal;
 }
-int hashUpdate(string i, int currentHash, unsigned int currentPos, unsigned int size)
+int hashUpdate(string i, int currentHash, unsigned int currentPos, unsigned int size, int h)
 {
+	int retVal = (BASE * (currentHash - (int)(i[currentPos]*h)) + i[currentPos+size])%PRIME_NUMBER;
 
+	if (retVal < 0)
+		retVal = (retVal + PRIME_NUMBER);
+	return retVal;
 }
 
 int match(string i, string s, int pos)
@@ -46,6 +50,10 @@ void findSubString(string s,string i,list <unsigned char> &position)
 	int lenS = s.length();
 	int initHash = hashCreate(i,lenS);
 	int subHash = hashCreate(s,lenS);
+	int h = 1;
+
+	for (it=0;it<lenS-1;it++)
+		h = (h * BASE) % PRIME_NUMBER;
 
 	for (it=0;it<p;it++)
 	{
@@ -56,7 +64,7 @@ void findSubString(string s,string i,list <unsigned char> &position)
 				position.push_back(it);
 			}
 		}
-		initHash = hashUpdate(i,initHash,it,lenS);
+		initHash = hashUpdate(i,initHash,it,lenS,h);
 	}
 
 }
@@ -69,7 +77,7 @@ int main()
 
 	for(It = position.begin();It != position.end();++It)
 	{
-		cout << *It << endl;
+		cout << (int)*It << endl;
 	}
 
 }
