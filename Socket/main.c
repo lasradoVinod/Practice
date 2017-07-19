@@ -57,28 +57,41 @@ int initSocket()
 
 void recvFile(int socketfd)
 {
+	uint8_t seqNum,prevSeqNum;
 	int len;
 	int retVal;
 	socklen_t lenStruct;
 	FILE * fp;
 	struct sockaddr_in peerAddress;	
-	char msg[BUFF_SIZE] = {0};
-	char ack = 1;
+	uint8_t msg[BUFF_SIZE] = {0};
+	uint8_t ack = 1;
 	fp = fopen("Output.pdf","wb");
 	lenStruct = sizeof (sockaddr_in);
 	len = recvfrom(socketfd,msg,BUFF_SIZE,0,(struct sockaddr *)&peerAddress,&lenStruct);
+	seqNum = msg[0];
+	printf("msg %d",msg[0]);
+	ack = seqNum;
+	prevSeqNum = (seqNum - 1) % MOD_SEQNUM;
+
 	retVal = sendto(socketfd,&ack,1,0,(struct sockaddr *)&peerAddress,lenStruct);
 	if(retVal == -1)
 	{
 		perror("Sending Failed");
 		exit(1);
 	}
-	while(msg[0] == 0)
-	{		
-		retVal = fwrite(&msg[1],1,len-1,fp);
-		printf ("retVal = %d\n",retVal);
+	while(!(msg[0] & (1 << 7)))
+	{	
+		printf ("seqNum %d", seqNum);
+		if(seqNum == msg[0])
+		{
+			fwrite(&msg[1],1,len-1,fp);
+			prevSeqNum = seqNum;
+			INC(seqNum);
+		}
+
 		len = recvfrom(socketfd,msg,BUFF_SIZE,0,(struct sockaddr *)&peerAddress,&lenStruct);
-		retVal = sendto(socketfd,&ack,1,0,(struct sockaddr *)&peerAddress,lenStruct);
+
+		retVal = sendto(socketfd,msg,1,0,(struct sockaddr *)&peerAddress,lenStruct);
 		if(retVal == -1)
 		{
 			perror("Sending Failed");
@@ -161,7 +174,7 @@ void recvFileGoBackN(int socketfd)
 						exit(1);
 					}
 				}
-				if((msg[0] & 0x7F) == prevSeqNum)
+				if((msg[0] & 0x7F) == ((seqNum - 5) % MOD_SEQNUM))
 				{
 					ack = prevSeqNum;
 					retVal = sendto(socketfd,&ack,1,0,(struct sockaddr *)&peerAddress,lenStruct);
@@ -176,6 +189,8 @@ void recvFileGoBackN(int socketfd)
 	}
 	fclose(fp);
 }
+
+
 int main()
 {
 	int socketfd = initSocket();

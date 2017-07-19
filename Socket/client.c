@@ -109,7 +109,7 @@ uint8_t waitForAck(int socketfd)
 	do
 	{
 		gettimeofday(&tv,NULL);
-		tv.tv_sec += 5;
+		tv.tv_sec += RETRY;
 		do{
 			retval = recv(socketfd,&ack,1,MSG_DONTWAIT);
 			gettimeofday(&ctv,NULL);
@@ -133,7 +133,7 @@ uint8_t waitForAck(int socketfd)
 void sendFile(const char * fileName, int socketfd)
 {
 	int8_t retval;
-	uint8_t ack;
+	uint8_t ack,seqNum;
 	uint8_t buffer [BUFF_SIZE] = {0};
 	size_t readBytes;
 	FILE * fp;
@@ -146,9 +146,12 @@ void sendFile(const char * fileName, int socketfd)
 		exit(1);
 	}
 
+	seqNum = ((uint8_t)rand() % MOD_SEQNUM);
+	buffer[0] = seqNum;
 	readBytes = fread(&buffer[1],1,BUFF_SIZE-1,fp);
 	while(readBytes)
 	{
+		printf ("seqNum %d %d", seqNum,ack);
 		retval = send(socketfd,buffer,readBytes+1,0);
 		if(retval == -1)
 		{
@@ -157,14 +160,18 @@ void sendFile(const char * fileName, int socketfd)
 		}
 
 		ack = waitForAck(socketfd);
-
-		if(ack == 1)
+		
+		if(ack == seqNum)
 		{
+			printf ("Recieved ack \n");
 			readBytes = fread(&buffer[1],1,BUFF_SIZE-1,fp);
+			INC(seqNum);
+			buffer[0] = seqNum;
 		}
 	}
 
-	buffer[0] = 1;
+	printf("Done Sending\n");
+	buffer[0] = (1 << 7) ;
 	send(socketfd,buffer,1,0);
 	fclose(fp);
 }
@@ -294,7 +301,7 @@ int main()
 	int socketfd = initSocket();
 	setbuf(stdout,NULL);
 	initQueue();
-/*	sendFile("Input.pdf",socketfd);*/
+	/*sendFile("Input.pdf",socketfd);*/
 	sendFileGOBackN("/home/vinod/Practice/Practice/Socket/Input.pdf",socketfd);
 	close(socketfd);
 	return 0;
