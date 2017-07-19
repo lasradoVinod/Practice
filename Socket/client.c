@@ -12,7 +12,7 @@
 #include <sys/time.h>
 
 
-#define PEER_PORT		4268
+#define PEER_PORT		42674
 #define BUFF_SIZE		1024
 #define RETRY			5
 #define WINDOW_SIZE		5

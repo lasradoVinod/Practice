@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 
-#define MY_PORT			4268
+#define MY_PORT			42674
 #define BUFF_SIZE		1024
 #define START			0x0A
 #define MOD_SEQNUM		128
@@ -38,7 +38,7 @@ int initSocket()
 
 	memset(myAddress.sin_zero, '\0', sizeof myAddress.sin_zero);
 
-	inet_aton("127.0.0.1",&(myAddress.sin_addr));
+	inet_aton("192.168.0.103",&(myAddress.sin_addr));
 
 	optval = 1;
 	if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) == -1)
