@@ -7,10 +7,13 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 
-#define MY_PORT			42674
-#define BUFF_SIZE		1024
-#define START			0x0A
-#define MOD_SEQNUM		128
+#define MY_PORT				42674
+#define CLIENT_PORT			54321
+#define BUFF_SIZE			1024
+#define START				0x0A
+#define MOD_SEQNUM			128
+#define ADDRESS_TO_SEND		"127.0.0.1"
+#define MY_ADDRESS			"127.0.0.1"
 
 #define INC(seqNum)		(seqNum = (seqNum + 1 ) % MOD_SEQNUM)
 
@@ -20,6 +23,7 @@ typedef enum
 	enRecv,
 	enStop
 }State;
+
 int initSocket()
 {
 	int optval;
@@ -38,7 +42,7 @@ int initSocket()
 
 	memset(myAddress.sin_zero, '\0', sizeof myAddress.sin_zero);
 
-	inet_aton("192.168.0.103",&(myAddress.sin_addr));
+	inet_aton(MY_ADDRESS,&(myAddress.sin_addr));
 
 	optval = 1;
 	if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) == -1)
@@ -52,6 +56,8 @@ int initSocket()
 		perror("Bind Failed");
 		exit(1);
 	}
+
+	printf("Connection Done");
 	return socketfd;
 }
 
@@ -190,12 +196,28 @@ void recvFileGoBackN(int socketfd)
 	fclose(fp);
 }
 
+void punchHole(int socketfd)
+{
+	struct sockaddr_in peerAddress;
+	socklen_t lenStruct;
+
+	peerAddress.sin_family = AF_INET;
+	peerAddress.sin_port = htons(MY_PORT);
+
+	memset(peerAddress.sin_zero, '\0', sizeof peerAddress.sin_zero);
+
+	lenStruct = sizeof (sockaddr_in);
+	inet_aton(ADDRESS_TO_SEND,&(peerAddress.sin_addr));
+
+	/*sendto(socketfd,"T",1,0,(struct sockaddr *)&peerAddress,lenStruct);*/
+}
 
 int main()
 {
 	int socketfd = initSocket();
+	punchHole(socketfd);
 	setbuf(stdout,NULL);
-	recvFileGoBackN(socketfd);
+	recvFile(socketfd);
 	close(socketfd);
 	return 0;
 }

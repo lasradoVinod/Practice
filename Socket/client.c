@@ -12,7 +12,8 @@
 #include <sys/time.h>
 
 
-#define PEER_PORT		42674
+#define MAIN_PORT		42674
+#define MY_PORT			54321
 #define BUFF_SIZE		1024
 #define RETRY			5
 #define WINDOW_SIZE		5
@@ -20,6 +21,8 @@
 #define MOD_SEQNUM		128
 #define INC(seqNum)		(seqNum = (seqNum + 1 ) % MOD_SEQNUM)
 #define TIMEOUT			3 /*sec*/
+#define ADDRESS_TO_SEND	"127.0.0.1"
+#define MY_ADDRESS		"127.0.0.1"
 
 typedef struct Queue
 {
@@ -73,9 +76,10 @@ int dequeue()
 
 int initSocket()
 {
+	int optval;
 	int socketfd,yes;
 	socklen_t lenStruct;
-	struct sockaddr_in myAddress;
+	struct sockaddr_in myAddress,peerAddress;
 	if ((socketfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
 		perror("socket not created");
 		exit(1);
@@ -86,14 +90,32 @@ int initSocket()
 		exit(1);
 	}
 
+		/*Defining source adress by binding*/
 	myAddress.sin_family = AF_INET;
-	myAddress.sin_port = htons(PEER_PORT);
+	myAddress.sin_port = htons(MY_PORT);
 
 	memset(myAddress.sin_zero, '\0', sizeof myAddress.sin_zero);
-	inet_aton("127.0.0.1",&(myAddress.sin_addr));
+
+	inet_aton(MY_ADDRESS,&(myAddress.sin_addr));
+
+
+	if (bind(socketfd,(struct sockaddr *)&myAddress,sizeof(myAddress)) == -1)
+	{
+		perror("Bind Failed");
+		exit(1);
+	}
+
+
+	/*Sending address*/
+
+	peerAddress.sin_family = AF_INET;
+	peerAddress.sin_port = htons(MAIN_PORT);
+
+	memset(peerAddress.sin_zero, '\0', sizeof peerAddress.sin_zero);
+	inet_aton(ADDRESS_TO_SEND,&(peerAddress.sin_addr));
 
 	lenStruct = sizeof (struct sockaddr_in);
-	connect (socketfd,(struct sockaddr *)&myAddress,lenStruct);
+	connect (socketfd,(struct sockaddr *)&peerAddress,lenStruct);
 
 	printf("Connection Done");
 	return socketfd;
@@ -296,13 +318,19 @@ void sendFileGOBackN(const char * fileName, int socketfd)
 
 	fclose (fp);
 }
+void punchHole(int socketfd)
+{/*
+	send(socketfd,"T",1,0);*/
+}
+
 int main()
 {
 	int socketfd = initSocket();
+	punchHole(socketfd);
 	setbuf(stdout,NULL);
 	initQueue();
-	/*sendFile("Input.pdf",socketfd);*/
-	sendFileGOBackN("/home/vinod/Practice/Practice/Socket/Input.pdf",socketfd);
+	sendFile("Input.pdf",socketfd);
+	/*sendFileGOBackN("/home/vinod/Practice/Practice/Socket/Input.pdf",socketfd);*/
 	close(socketfd);
 	return 0;
 }
