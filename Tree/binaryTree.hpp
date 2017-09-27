@@ -27,6 +27,7 @@ class BinaryTree: public Tree <uint16_t>
 		int addNode(uint16_t);
         int deleteNode(uint16_t);
 		void traversal(uint32_t type);
+		uint16_t findAncestralNode(uint16_t d1, uint16_t d2);
 };      
                       
 #endif

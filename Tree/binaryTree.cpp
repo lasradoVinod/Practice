@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdint.h>
+#include <queue>
 #include "binaryTree.hpp"
 
 
@@ -10,7 +11,7 @@ BinaryTree::BinaryTree()
 
 static void initRoot(TreeNode ** const root, uint16_t data)
 {
-	*root = (TreeNode*) new TreeNode;
+	*root =  new TreeNode;
 	(*root)->data = data;
 	(*root)->left = NULL;
 	(*root)->right = NULL;
@@ -213,5 +214,32 @@ void traverse(TreeNode const * const pointer, uint32_t type)
 void BinaryTree::traversal(uint32_t type)
 {
 	traverse (root,type);
+}
 
+static TreeNode * findAnsNode( TreeNode * node,uint16_t d1, uint16_t d2)
+{
+	if (node->data == d1 || node->data == d2)
+		return node;
+
+	TreeNode * n1;
+	TreeNode * n2;
+	if (node->left != NULL)
+		n1 = findAnsNode(node->left,d1,d2);
+	else
+	    return NULL;
+
+	if (node->right != NULL)
+		n2 = findAnsNode(node->right,d1,d2);
+	else
+	  return NULL;
+
+	if (n1 != NULL && n2 != NULL)
+		return node;
+	else
+		return n1 == NULL ? n2 : n1;
+}
+
+uint16_t BinaryTree::findAncestralNode(uint16_t d1, uint16_t d2)
+{
+	return findAnsNode(root,d1,d2)->data;
 }
