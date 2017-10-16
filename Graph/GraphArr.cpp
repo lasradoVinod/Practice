@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <cstring>
 #include <list>
+#include <vector>
 #include <iterator>
 #include <stdlib.h>
 #include "graph.hpp"
@@ -166,7 +167,42 @@ void GraphArr::display()
 	}
 }
 
-void Kruskal(int * tree)
+uint32_t GraphArr::FindShortestDistance(uint32_t start, uint32_t end)
 {
-	
+	std::vector<uint8_t> v(numNodes,0);
+	std::vector<uint32_t> d(numNodes,MAX);
+
+	int i;
+	int currNode = start;
+	v[start] = 1;
+	d[start] = 0;
+	int minLength = MAX;
+	int minIndex = -1;
+	while(1)
+	{
+		minLength = MAX;
+		minIndex = -1;
+		for (i=0;i<numNodes;i++)
+		{
+			if (v[i] == 0 && (root[currNode][i] + d[currNode] < d[i]))
+			{
+				d[i] = root[currNode][i] + d[currNode];
+				minLength = d[i];
+				minIndex = i;
+
+
+			}
+			for (int j=0;j<numNodes;j++)
+			{
+				std::cout << d[j] << " " ;
+			}
+			std::cout << std::endl;
+		}
+		if (minIndex == -1)
+			break;
+
+		currNode = minIndex;
+		v[currNode] = 1;
+	}
+	return d[end];
 }

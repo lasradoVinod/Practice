@@ -12,8 +12,6 @@
 #define BUFF_SIZE			1024
 #define START				0x0A
 #define MOD_SEQNUM			128
-#define ADDRESS_TO_SEND		"127.0.0.1"
-#define MY_ADDRESS			"127.0.0.1"
 
 #define INC(seqNum)		(seqNum = (seqNum + 1 ) % MOD_SEQNUM)
 
@@ -24,7 +22,7 @@ typedef enum
 	enStop
 }State;
 
-int initSocket()
+int initSocket(char *ip)
 {
 	int optval;
 
@@ -42,7 +40,7 @@ int initSocket()
 
 	memset(myAddress.sin_zero, '\0', sizeof myAddress.sin_zero);
 
-	inet_aton(MY_ADDRESS,&(myAddress.sin_addr));
+	inet_aton(ip,&(myAddress.sin_addr));
 
 	optval = 1;
 	if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) == -1)
@@ -72,7 +70,7 @@ void recvFile(int socketfd)
 	uint8_t msg[BUFF_SIZE] = {0};
 	uint8_t ack = 1;
 	fp = fopen("Output.pdf","wb");
-	lenStruct = sizeof (sockaddr_in);
+	lenStruct = sizeof (struct sockaddr_in);
 	len = recvfrom(socketfd,msg,BUFF_SIZE,0,(struct sockaddr *)&peerAddress,&lenStruct);
 	seqNum = msg[0];
 	printf("msg %d",msg[0]);
@@ -122,7 +120,7 @@ void recvFileGoBackN(int socketfd)
 	State state = enStart;
 
 	fp = fopen("Output.pdf","wb");
-	lenStruct = sizeof (sockaddr_in);
+	lenStruct = sizeof (struct sockaddr_in);
 
 	while(done)
 	{
@@ -196,27 +194,13 @@ void recvFileGoBackN(int socketfd)
 	fclose(fp);
 }
 
-void punchHole(int socketfd)
+int main(int argc, char * argv[])
 {
-	struct sockaddr_in peerAddress;
-	socklen_t lenStruct;
-
-	peerAddress.sin_family = AF_INET;
-	peerAddress.sin_port = htons(MY_PORT);
-
-	memset(peerAddress.sin_zero, '\0', sizeof peerAddress.sin_zero);
-
-	lenStruct = sizeof (sockaddr_in);
-	inet_aton(ADDRESS_TO_SEND,&(peerAddress.sin_addr));
-
-	/*sendto(socketfd,"T",1,0,(struct sockaddr *)&peerAddress,lenStruct);*/
-}
-
-int main()
-{
-	int socketfd = initSocket();
-	punchHole(socketfd);
-	setbuf(stdout,NULL);
+	if (argc < 2)
+		return -1;
+	int socketfd = initSocket(argv[1]);
+	/*setbuf(stdout,NULL);
+	*/
 	recvFile(socketfd);
 	close(socketfd);
 	return 0;

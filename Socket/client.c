@@ -21,8 +21,6 @@
 #define MOD_SEQNUM		128
 #define INC(seqNum)		(seqNum = (seqNum + 1 ) % MOD_SEQNUM)
 #define TIMEOUT			3 /*sec*/
-#define ADDRESS_TO_SEND	"127.0.0.1"
-#define MY_ADDRESS		"127.0.0.1"
 
 typedef struct Queue
 {
@@ -74,7 +72,7 @@ int dequeue()
 	return 0;
 }
 
-int initSocket()
+int initSocket(char * ipMine, char * dest)
 {
 	int optval;
 	int socketfd,yes;
@@ -96,7 +94,7 @@ int initSocket()
 
 	memset(myAddress.sin_zero, '\0', sizeof myAddress.sin_zero);
 
-	inet_aton(MY_ADDRESS,&(myAddress.sin_addr));
+	inet_aton(ipMine,&(myAddress.sin_addr));
 
 
 	if (bind(socketfd,(struct sockaddr *)&myAddress,sizeof(myAddress)) == -1)
@@ -112,7 +110,7 @@ int initSocket()
 	peerAddress.sin_port = htons(MAIN_PORT);
 
 	memset(peerAddress.sin_zero, '\0', sizeof peerAddress.sin_zero);
-	inet_aton(ADDRESS_TO_SEND,&(peerAddress.sin_addr));
+	inet_aton(dest,&(peerAddress.sin_addr));
 
 	lenStruct = sizeof (struct sockaddr_in);
 	connect (socketfd,(struct sockaddr *)&peerAddress,lenStruct);
@@ -318,15 +316,13 @@ void sendFileGOBackN(const char * fileName, int socketfd)
 
 	fclose (fp);
 }
-void punchHole(int socketfd)
-{/*
-	send(socketfd,"T",1,0);*/
-}
 
-int main()
+int main(int argc, char * argv[])
 {
-	int socketfd = initSocket();
-	punchHole(socketfd);
+	if (argc < 3)
+		return -1;
+	int socketfd = initSocket(argv[1],argv[2]);
+
 	setbuf(stdout,NULL);
 	initQueue();
 	sendFile("Input.pdf",socketfd);
