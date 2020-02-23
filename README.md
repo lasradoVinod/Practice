@@ -26,3 +26,5 @@ Hacker rank problem with the same name has met the same fate as TR1 and ANKPAL. 
 
 AnD: Another Hacker Rank problem named Append and Delete.
 
+Script for my video: https://docs.google.com/document/d/1t_L4ZlfSH_PkwVAGKQe3SxTe3rOIHtB17wiP9Ucd0HQ/edit?usp=sharing
+
